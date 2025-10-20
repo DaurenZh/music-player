@@ -1,0 +1,68 @@
+{
+    "name": "Deadbeat",
+    "artistName": "Tame Impala",
+    "albumCover": "images/albumCovers/deadbeat.png",
+    "releaseYear": "2025",
+    "tracks": [
+        {
+            "id": 1,
+            "name": "My Old Ways",
+            "song": "songs/MyOldWays.mp3"
+        },
+        {
+            "id": 2,
+            "name": "No Reply",
+            "song": "songs/NoReply.mp3"
+        },
+        {
+            "id": 3,
+            "name": "Dracula",
+            "song": "songs/Dracula.mp3"
+        },
+        {
+            "id": 4,
+            "name": "Loser",
+            "song": "songs/Loser.mp3"
+        },
+        {
+            "id": 5,
+            "name": "Oblivion",
+            "song": "songs/Oblivion.mp3"
+        },
+        {
+            "id": 6,
+            "name": "Not My World",
+            "song": "songs/NotMyWorld.mp3"
+        },
+        {
+            "id": 7,
+            "name": "Piece Of Heaven",
+            "song": "songs/PieceOfHeaven.mp3"
+        },
+        {
+            "id": 8,
+            "name": "Obsolete",
+            "song": "songs/Obsolete.mp3"
+        },
+        {
+            "id": 9,
+            "name": "Ethernal Connection",
+            "song": "songs/EtherealConnection.mp3"
+        },
+        {
+            "id": 10,
+            "name": "See You On Monday(You're Lost)",
+            "song": "songs/SeeYouOnMonday(You'reLost).mp3"
+        },
+        {
+            "id": 11,
+            "name": "Afterthought",
+            "song": "songs/Afterthought.mp3"
+        },
+        {
+            "id": 12,
+            "name": "End Of Summer",
+            "song": "songs/EndOfSummer.mp3"
+        }
+    ]
+}
