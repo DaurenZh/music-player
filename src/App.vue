@@ -4,6 +4,7 @@
   import MenuItem from './components/MenuItem.vue';
   import MusicPlayer from './components/MusicPlayer.vue'
   import SearchBar from './components/SearchBar.vue'
+  import CreatePlaylistModal from './components/CreatePlaylistModal.vue'
   import { useRoute } from 'vue-router'
   import ChevronUp from 'vue-material-design-icons/ChevronUp.vue';
   import ChevronDown from 'vue-material-design-icons/ChevronDown.vue';
@@ -13,11 +14,12 @@
   import { useSongStore } from './stores/song'
   import { storeToRefs } from 'pinia';
   const useSong = useSongStore()
-  const { isPlaying, currentTrack } = storeToRefs(useSong)
+  const { isPlaying, currentTrack, playlists } = storeToRefs(useSong)
 
   onMounted(() => { isPlaying.value = false })
 
   let openMenu = ref(false)
+  const createPlaylistModal = ref(null)
   const accounts = ref([
     {
       name: 'Dauren',
@@ -119,16 +121,29 @@
                     <MenuItem class="ml-[2px]" :iconSize="23" name="Your Library" iconString="library" pageUrl="/library" />
                 </RouterLink>
                 <div class="py-3.5"></div>
-                <MenuItem :iconSize="24" name="Create Playlist" iconString="playlist" pageUrl="/playlist" />
-                <MenuItem class="-ml-[1px]" :iconSize="27" name="Liked Songs" iconString="liked" pageUrl="/liked" />
+                <MenuItem :iconSize="24" name="Create Playlist" iconString="playlist" pageUrl="/playlist" @click="createPlaylistModal?.openModal()" />
+                <RouterLink to="/liked">
+                    <MenuItem class="-ml-[1px]" :iconSize="27" name="Liked Songs" iconString="liked" pageUrl="/liked" />
+                </RouterLink>
             </ul>
             <div class="border-b border-b-gray-700"></div>
-            <ul>
-                <li class="font-semibold text-[13px] mt-3 text-gray-300 hover:text-white">GYM</li>
-                <li class="font-semibold text-[13px] mt-3 text-gray-300 hover:text-white">Focus</li>
-                <li class="font-semibold text-[13px] mt-3 text-gray-300 hover:text-white"><3</li>
-                <li class="font-semibold text-[13px] mt-3 text-gray-300 hover:text-white">Liked Songs(Filtered)</li>
-            </ul>
+
+            
+            <div v-if="playlists.length > 0" class="mt-4">
+                <div class="text-gray-400 text-xs font-semibold mb-2">YOUR PLAYLISTS</div>
+                <ul>
+                    <RouterLink 
+                        v-for="playlist in playlists" 
+                        :key="playlist.id" 
+                        :to="`/playlist/${playlist.id}`"
+                        class="block"
+                    >
+                        <li class="font-semibold text-[13px] mt-3 text-gray-300 hover:text-white cursor-pointer">
+                            {{ playlist.name }}
+                        </li>
+                    </RouterLink>
+                </ul>
+            </div>
         </div>
     </div>
 
@@ -151,4 +166,5 @@
     </div>
 
     <MusicPlayer v-if="currentTrack"/>
+    <CreatePlaylistModal ref="createPlaylistModal" />
 </template>

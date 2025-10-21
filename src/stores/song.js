@@ -6,7 +6,9 @@ export const useSongStore = defineStore('song', {
     isPlaying: false,
     audio: null,
     currentArtist: null,
-    currentTrack: null
+    currentTrack: null,
+    likedTracks: [],
+    playlists: []
   }),
   actions: {
     loadSong(artist, track) {
@@ -73,6 +75,53 @@ export const useSongStore = defineStore('song', {
         this.audio = null
         this.currentArtist = null
         this.currentTrack = null
+    },
+
+    toggleLike(trackId) {
+        const index = this.likedTracks.indexOf(trackId)
+        if (index > -1) {
+            this.likedTracks.splice(index, 1)
+        } else {
+            this.likedTracks.push(trackId)
+        }
+    },
+
+    isLiked(trackId) {
+        return this.likedTracks.includes(trackId)
+    },
+
+    createPlaylist(name) {
+        const playlist = {
+            id: Date.now(),
+            name: name,
+            tracks: []
+        }
+        this.playlists.push(playlist)
+        return playlist
+    },
+
+    addTrackToPlaylist(playlistId, trackId) {
+        const playlist = this.playlists.find(p => p.id === playlistId)
+        if (playlist && !playlist.tracks.includes(trackId)) {
+            playlist.tracks.push(trackId)
+        }
+    },
+
+    removeTrackFromPlaylist(playlistId, trackId) {
+        const playlist = this.playlists.find(p => p.id === playlistId)
+        if (playlist) {
+            const index = playlist.tracks.indexOf(trackId)
+            if (index > -1) {
+                playlist.tracks.splice(index, 1)
+            }
+        }
+    },
+
+    deletePlaylist(playlistId) {
+        const index = this.playlists.findIndex(p => p.id === playlistId)
+        if (index > -1) {
+            this.playlists.splice(index, 1)
+        }
     }
   },
   persist: true

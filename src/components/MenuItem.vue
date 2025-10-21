@@ -43,6 +43,7 @@ const isHover = () => {
         class="flex items-center justify-start pb-4 cursor-pointer" 
         @mouseenter="isHover()" 
         @mouseleave="isHover()"
+        @click="$emit('click')"
     >
         <img :width="iconSize" :src="`/images/icons/${icon}.png`">
         <div

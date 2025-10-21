@@ -3,11 +3,21 @@ import { ref, toRefs, onMounted } from 'vue'
 import Heart from 'vue-material-design-icons/Heart.vue';
 import Play from 'vue-material-design-icons/Play.vue';
 import Pause from 'vue-material-design-icons/Pause.vue';
+import DotsHorizontal from 'vue-material-design-icons/DotsHorizontal.vue';
 
 import { useSongStore } from '../stores/song'
 import { storeToRefs } from 'pinia';
 const useSong = useSongStore()
 const { isPlaying, currentTrack } = storeToRefs(useSong)
+
+const toggleLike = () => {
+    useSong.toggleLike(track.value.id)
+}
+
+const emit = defineEmits(['addToPlaylist'])
+const showAddToPlaylist = () => {
+    emit('addToPlaylist', track.value)
+}
 
 let isHover = ref(false)
 let isTrackTime = ref(null)
@@ -70,8 +80,11 @@ onMounted(() => {
             </div>
         </div>
         <div class="flex items-center">
-            <button type="button" v-if="isHover">
-                <Heart fillColor="#1BD760" :size="22"/>
+            <button type="button" v-if="isHover" @click="toggleLike">
+                <Heart :fillColor="useSong.isLiked(track.id) ? '#1BD760' : '#B3B3B3'" :size="22"/>
+            </button>
+            <button type="button" v-if="isHover" @click="showAddToPlaylist" class="ml-2">
+                <DotsHorizontal fillColor="#B3B3B3" :size="20"/>
             </button>
             <div
                 v-if="isTrackTime"
