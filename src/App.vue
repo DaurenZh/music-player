@@ -18,6 +18,22 @@
   onMounted(() => { isPlaying.value = false })
 
   let openMenu = ref(false)
+  const accounts = ref([
+    {
+      name: 'Dauren',
+      avatar: 'https://picsum.photos/seed/dauren/80/80'
+    },
+    {
+      name: 'Abylaikhan',
+      avatar: 'https://picsum.photos/seed/abylaikahn/80/80'
+    }
+  ])
+  const activeAccountIndex = ref(0)
+  const activeAccount = () => accounts.value[activeAccountIndex.value]
+  const switchAccount = (idx) => {
+    activeAccountIndex.value = idx
+    openMenu.value = false
+  }
   const route = useRoute()
 </script>
 
@@ -55,19 +71,32 @@
                 <div class="flex items-center">
                     <img 
                       class="rounded-full" 
-                      width="27"
-                      src="https://yt3.ggpht.com/yti/ANjgQV88r0i47H7eGCkDV-HgBCOj2RY0lBjkWIJN67BDwdeiPvA=s88-c-k-c0x00ffffff-no-rj"
+                      width="27" height="27" style="object-fit: cover;"
+                      :src="activeAccount().avatar"
                     >
-                    <div class="text-white text-[14px] ml-1.5 font-semibold">Dauren</div>
-                    <ChevronDown v-if="!openMenu" @click="openMenu = true" fillColor="#FFFFFF" :size="25" />
-                    <ChevronUp v-else @click="openMenu = false" fillColor="#FFFFFF" :size="25" />
+                    <div class="text-white text-[14px] ml-1.5 font-semibold">{{ activeAccount().name }}</div>
+                    <ChevronDown v-if="!openMenu" @click.stop="openMenu = true" fillColor="#FFFFFF" :size="25" />
+                    <ChevronUp v-else @click.stop="openMenu = false" fillColor="#FFFFFF" :size="25" />
                 </div>
             </button>
 
             <span v-if="openMenu"
-                class="fixed w-[190px] bg-[#282828] shadow-2xl z-50 rounded-sm top-[52px] right-[35px] p-1 cursor-pointer">
+                class="fixed w-[240px] bg-[#282828] shadow-2xl z-50 rounded-sm top-[52px] right-[35px] p-1 cursor-pointer">
                 <ul class="text-gray-200 font-semibold text-[14px]">
-                    <li class="px-3 py-2.5 hover:bg-[#3E3D3D] border-b border-b-gray-600">Profile</li>
+                    <li class="px-3 py-2.5 text-gray-300">Accounts</li>
+                    <li 
+                      v-for="(acc, idx) in accounts" 
+                      :key="acc.name"
+                      class="px-3 py-2.5 hover:bg-[#3E3D3D] flex items-center justify-between"
+                      @click="switchAccount(idx)"
+                    >
+                        <div class="flex items-center">
+                            <img :src="acc.avatar" class="rounded-full" width="26" height="26" style="object-fit: cover;">
+                            <span class="ml-2" :class="idx === activeAccountIndex ? 'text-white' : ''">{{ acc.name }}</span>
+                        </div>
+                        <span v-if="idx === activeAccountIndex" class="text-green-500 text-xs">Current</span>
+                    </li>
+                    <li class="px-3 py-2.5 hover:bg-[#3E3D3D] border-t border-t-gray-600">Profile</li>
                     <li class="px-3 py-2.5 hover:bg-[#3E3D3D]">Log out</li>
                 </ul>
             </span>
