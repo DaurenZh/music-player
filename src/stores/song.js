@@ -20,7 +20,7 @@ export const useSongStore = defineStore('song', {
         }
 
         this.audio = new Audio()
-        this.audio.src = track.path
+        this.audio.src = '/' + track.song
 
         setTimeout(() => {
             this.isPlaying = true
