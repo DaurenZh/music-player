@@ -1,9 +1,17 @@
 <script setup>
+    import { computed } from 'vue'
+    import { useRoute } from 'vue-router'
     import CategorySelect from '../components/CategorySelect.vue';
+
+    const route = useRoute()
+    const query = computed(() => typeof route.query.q === 'string' ? route.query.q : '')
 </script>
 
 <template>
     <div class="p-8">
+        <div v-if="query" class="text-gray-300 text-sm mb-3">
+            Showing results for <span class="text-white font-semibold">"{{ query }}"</span>
+        </div>
         <button
             type="button"
             class="text-white text-2xl font-semibold hover:underline cursor-pointer"

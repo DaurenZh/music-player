@@ -3,6 +3,8 @@
   import { RouterLink, RouterView } from 'vue-router'
   import MenuItem from './components/MenuItem.vue';
   import MusicPlayer from './components/MusicPlayer.vue'
+  import SearchBar from './components/SearchBar.vue'
+  import { useRoute } from 'vue-router'
   import ChevronUp from 'vue-material-design-icons/ChevronUp.vue';
   import ChevronDown from 'vue-material-design-icons/ChevronDown.vue';
   import ChevronRight from 'vue-material-design-icons/ChevronRight.vue';
@@ -16,6 +18,7 @@
   onMounted(() => { isPlaying.value = false })
 
   let openMenu = ref(false)
+  const route = useRoute()
 </script>
 
 <template>
@@ -35,13 +38,16 @@
             justify-between
           "
         >
-            <div class="flex items-center ml-6">
+            <div class="flex items-center ml-6 w-1/3">
                 <button type="button" class="rounded-full bg-black p-[1px] cursor-pointer">
                     <ChevronLeft fillColor="#FFFFFF" :size="30" />
                 </button>
                 <button type="button" class="rounded-full bg-black p-[1px] hover:bg-[#] ml-4 cursor-pointer">
                     <ChevronRight fillColor="#FFFFFF" :size="30" />
                 </button>
+            </div>
+            <div class="flex-1 flex justify-center" v-if="route.path === '/search'">
+                <SearchBar />
             </div>
 
             <button @click="openMenu = !openMenu" :class="openMenu ? 'bg-[#282828]' : 'bg-black'"
