@@ -36,7 +36,6 @@ const playFunc = () => {
             </div>
 
             <div class="w-full ml-5">
-                <div class="text-gray-300 text-[13px] mb-2">Playlist</div>
                 <div
                     style="font-size: 33px;"
                     class="text-white absolute w-full hover:underline cursor-pointer top-0 font-bosemiboldld"
