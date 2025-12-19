@@ -27,7 +27,7 @@ onMounted(() => {
 })
 
 const playTrack = (track) => {
-    useSong.playOrPauseThisSong({ name: track.artistName, artistName: track.artistName, albumCover: track.albumCover }, track)
+    useSong.playOrPauseThisSong({ name: track.artistName, artistName: track.artistName, albumCover: track.albumCover }, track, recentlyPlayed.value)
 }
 
 // Filter liked tracks from searchTracks + recentlyPlayed (since we only store IDs in likedTracks)
@@ -111,6 +111,7 @@ const handleAddToPlaylist = (track) => {
                     :artist="{ name: track.artistName, artistName: track.artistName }" 
                     :track="track" 
                     :index="index + 1" 
+                    :tracksContext="searchTracks"
                     @addToPlaylist="handleAddToPlaylist"
                 />
             </ul>

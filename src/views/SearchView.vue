@@ -58,6 +58,7 @@
                     :artist="{ name: track.artistName, artistName: track.artistName }" 
                     :track="track" 
                     :index="index + 1" 
+                    :tracksContext="searchTracks"
                     @addToPlaylist="handleAddToPlaylist"
                 />
             </ul>

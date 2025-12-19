@@ -33,12 +33,12 @@ const playlistTracks = computed(() => {
 
 const playFunc = () => {
     if (currentTrack.value && playlistTracks.value.some(t => t.id === currentTrack.value.id)) {
-        useSong.playOrPauseThisSong(currentArtist.value, currentTrack.value)
+        useSong.playOrPauseThisSong(currentArtist.value, currentTrack.value, playlistTracks.value)
         return
     } 
     if (playlistTracks.value.length > 0) {
         const track = playlistTracks.value[0]
-        useSong.loadSong({ name: track.artistName, artistName: track.artistName, albumCover: track.albumCover }, track)
+        useSong.loadSong({ name: track.artistName, artistName: track.artistName, albumCover: track.albumCover }, track, playlistTracks.value)
     }
 }
 
@@ -128,7 +128,7 @@ const openEditModal = () => {
         <div class="mb-4"></div>
         <ul class="w-full" v-for="(track, index) in playlistTracks" :key="track.id">
             <li class="flex items-center justify-between rounded-md hover:bg-[#2A2929] group px-2 py-1">
-                <div class="flex items-center w-full py-1.5 cursor-pointer" @click="useSong.playOrPauseThisSong({ name: track.artistName, artistName: track.artistName, albumCover: track.albumCover }, track)">
+                <div class="flex items-center w-full py-1.5 cursor-pointer" @click="useSong.playOrPauseThisSong({ name: track.artistName, artistName: track.artistName, albumCover: track.albumCover }, track, playlistTracks)">
                     <div class="text-white font-semibold w-[40px] ml-5">
                         <span v-if="!isPlaying || currentTrack?.id !== track.id" class="group-hover:hidden">{{ ++index }}</span>
                         <Play v-if="!isPlaying || currentTrack?.id !== track.id" fillColor="#FFFFFF" :size="20" class="hidden group-hover:block"/>

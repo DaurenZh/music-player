@@ -30,6 +30,10 @@ const props = defineProps({
   track: Object,
   artist: Object,
   index: Number,
+  tracksContext: {
+    type: Array,
+    default: () => []
+  },
   showMenu: {
     type: Boolean,
     default: false,
@@ -70,7 +74,7 @@ const playThis = () => {
         artistName: track.value.artistName, 
         albumCover: track.value.albumCover 
     }
-    useSong.playOrPauseThisSong(artistObj, track.value)
+    useSong.playOrPauseThisSong(artistObj, track.value, props.tracksContext)
 }
 </script>
 

@@ -14,12 +14,12 @@ const { isPlaying, currentTrack, currentArtist, likedTracks } = storeToRefs(useS
 
 const playFunc = () => {
     if (currentTrack.value && likedTracks.value.some(t => t.id === currentTrack.value.id)) {
-        useSong.playOrPauseThisSong(currentArtist.value, currentTrack.value)
+        useSong.playOrPauseThisSong(currentArtist.value, currentTrack.value, likedTracks.value)
         return
     } 
     if (likedTracks.value.length > 0) {
         const track = likedTracks.value[0]
-        useSong.loadSong({ name: track.artistName, artistName: track.artistName, albumCover: track.albumCover }, track)
+        useSong.loadSong({ name: track.artistName, artistName: track.artistName, albumCover: track.albumCover }, track, likedTracks.value)
     }
 }
 </script>
@@ -74,6 +74,7 @@ const playFunc = () => {
                 :artist="{ name: track.artistName, artistName: track.artistName }" 
                 :track="track" 
                 :index="index + 1"
+                :tracksContext="likedTracks"
             />
         </ul>
         <div v-if="likedTracks.length === 0" class="text-gray-400 text-center mt-10">

@@ -12,7 +12,8 @@ export const useSongStore = defineStore('song', {
     searchTracks: [],
     recentlyPlayed: [],
     
-
+    // New State
+    currentList: [], // The current queue/context for playback
     homeSections: [],
     topArtists: [], 
     isShuffle: false,
@@ -127,9 +128,13 @@ export const useSongStore = defineStore('song', {
         }
     },
 
-    loadSong(artist, track) {
+    loadSong(artist, track, list = null) {
       this.currentArtist = artist
       this.currentTrack = track
+
+      if (list) {
+          this.currentList = list
+      }
 
       if (this.audio && this.audio.src) {
         this.audio.pause()
@@ -174,43 +179,43 @@ export const useSongStore = defineStore('song', {
       }
     },
 
-    playOrPauseThisSong(artist, track) {
+    playOrPauseThisSong(artist, track, list = null) {
       if (!this.audio || !this.audio.src || this.currentTrack.id !== track.id) {
-        this.loadSong(artist, track)
+        this.loadSong(artist, track, list)
         return
       }
       this.playOrPauseSong()
     },
 
     prevSong(currentTrack) {
-        let list = this.searchTracks.length > 0 ? this.searchTracks : this.recentlyPlayed
-        if (list.length === 0) list = artist.tracks
+        let list = this.currentList
+        if (!list || list.length === 0) list = artist.tracks
         
         if (this.isShuffle) {
              let randomIndex = Math.floor(Math.random() * list.length)
              const track = list[randomIndex]
-             this.loadSong(track.artistName ? { ...track, name: track.artistName } : artist, track)
+             this.loadSong(track.artistName ? { ...track, name: track.artistName } : artist, track, list)
              return
         }
 
         let index = list.findIndex(t => t.id === currentTrack.id)
         if (index > 0) {
             const track = list[index - 1]
-            this.loadSong(track.artistName ? { ...track, name: track.artistName } : artist, track)
+            this.loadSong(track.artistName ? { ...track, name: track.artistName } : artist, track, list)
         } else {
              const track = list[list.length - 1]
-             this.loadSong(track.artistName ? { ...track, name: track.artistName } : artist, track)
+             this.loadSong(track.artistName ? { ...track, name: track.artistName } : artist, track, list)
         }
     },
 
     nextSong(currentTrack) {
         if (this.repeatMode === 2) { // Repeat One
-            this.loadSong(this.currentArtist, currentTrack)
+            this.loadSong(this.currentArtist, currentTrack, this.currentList)
             return
         }
 
-        let list = this.searchTracks.length > 0 ? this.searchTracks : this.recentlyPlayed
-        if (list.length === 0) list = artist.tracks
+        let list = this.currentList
+        if (!list || list.length === 0) list = artist.tracks
 
         if (this.isShuffle) {
             let randomIndex = Math.floor(Math.random() * list.length)
@@ -218,21 +223,21 @@ export const useSongStore = defineStore('song', {
                 randomIndex = (randomIndex + 1) % list.length
             }
             const track = list[randomIndex]
-            this.loadSong(track.artistName ? { ...track, name: track.artistName } : artist, track)
+            this.loadSong(track.artistName ? { ...track, name: track.artistName } : artist, track, list)
             return
         }
 
         let index = list.findIndex(t => t.id === currentTrack.id)
         if (index < list.length - 1) {
             const track = list[index + 1]
-            this.loadSong(track.artistName ? { ...track, name: track.artistName } : artist, track)
+            this.loadSong(track.artistName ? { ...track, name: track.artistName } : artist, track, list)
         } else {
             if (this.repeatMode === 1) { // Repeat All
                 const track = list[0]
-                this.loadSong(track.artistName ? { ...track, name: track.artistName } : artist, track)
+                this.loadSong(track.artistName ? { ...track, name: track.artistName } : artist, track, list)
             } else {
                 const track = list[0]
-                this.loadSong(track.artistName ? { ...track, name: track.artistName } : artist, track)
+                this.loadSong(track.artistName ? { ...track, name: track.artistName } : artist, track, list)
             }
         }
     },
@@ -240,7 +245,7 @@ export const useSongStore = defineStore('song', {
     playFromFirst() {
       this.resetState()
       let track = this.searchTracks.length > 0 ? this.searchTracks[0] : artist.tracks[0]
-      this.loadSong(track.artistName ? { ...track, name: track.artistName } : artist, track)
+      this.loadSong(track.artistName ? { ...track, name: track.artistName } : artist, track, this.searchTracks)
     },
 
     resetState() {
