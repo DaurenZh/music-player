@@ -264,9 +264,9 @@ const playTrack = (track) => {
     <div class="mb-4"></div>
 
     <ul class="w-full" v-for="(track, index) in playlistTracks" :key="track.id">
-      <SongRow 
-        :artist="artist" 
-        :track="track" 
+      <SongRow
+        :artist="artist"
+        :track="track"
         :index="index + 1"
         :showMenuButton="true"
         :showMenu="activeTrackMenu === track.id"
