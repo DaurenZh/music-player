@@ -21,7 +21,7 @@ const closeModal = () => {
 
 const addToPlaylist = (playlistId) => {
     if (selectedTrack.value) {
-        useSong.addTrackToPlaylist(playlistId, selectedTrack.value.id)
+        useSong.addTrackToPlaylist(playlistId, selectedTrack.value)
     }
     closeModal()
 }
@@ -29,15 +29,15 @@ const addToPlaylist = (playlistId) => {
 const isInPlaylist = (playlistId) => {
     if (!selectedTrack.value) return false
     const playlist = playlists.value.find(p => p.id === playlistId)
-    return playlist && playlist.tracks.includes(selectedTrack.value.id)
+    return playlist && playlist.tracks.some(t => t.id === selectedTrack.value.id)
 }
 
 defineExpose({ openModal })
 </script>
 
 <template>
-    <div v-if="showModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-        <div class="bg-[#282828] rounded-lg p-6 w-96">
+    <div v-if="showModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" @click.self="closeModal">
+        <div class="bg-[#282828] rounded-lg p-6 w-96 shadow-2xl">
             <h2 class="text-white text-xl font-bold mb-4">Add to Playlist</h2>
             <div v-if="selectedTrack" class="mb-4">
                 <p class="text-gray-300 text-sm">Add "{{ selectedTrack.name }}" to:</p>
@@ -53,10 +53,10 @@ defineExpose({ openModal })
                         :key="playlist.id"
                         @click="addToPlaylist(playlist.id)"
                         :disabled="isInPlaylist(playlist.id)"
-                        class="w-full text-left px-3 py-2 hover:bg-[#3E3D3D] rounded text-white disabled:opacity-50 disabled:cursor-not-allowed"
+                        class="w-full text-left px-3 py-2 hover:bg-[#3E3D3D] rounded text-white disabled:opacity-50 disabled:cursor-not-allowed flex justify-between items-center"
                     >
-                        {{ playlist.name }}
-                        <span v-if="isInPlaylist(playlist.id)" class="text-green-500 text-xs ml-2">✓</span>
+                        <span>{{ playlist.name }}</span>
+                        <span v-if="isInPlaylist(playlist.id)" class="text-green-500 text-xs">Added</span>
                     </button>
                 </div>
             </div>
@@ -64,7 +64,7 @@ defineExpose({ openModal })
             <div class="flex justify-end mt-4">
                 <button
                     @click="closeModal"
-                    class="px-4 py-2 text-gray-300 hover:text-white"
+                    class="px-4 py-2 text-gray-300 hover:text-white font-bold"
                 >
                     Cancel
                 </button>

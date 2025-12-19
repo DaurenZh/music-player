@@ -1,5 +1,5 @@
 <template>
-    <RouterLink to="library">
+    <RouterLink :to="{ path: 'search', query: { q: category } }">
         <div
             v-if="randColor.color"
             :style="`background-color: ${randColor.color};`"

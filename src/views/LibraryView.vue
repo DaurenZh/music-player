@@ -1,26 +1,37 @@
 <script setup>
-import { ref } from 'vue'
+import { onMounted, computed, ref } from 'vue'
 import SongRow from '../components/SongRow.vue'
 import AddToPlaylistModal from '../components/AddToPlaylistModal.vue'
 import Play from 'vue-material-design-icons/Play.vue';
 import Pause from 'vue-material-design-icons/Pause.vue';
-import DotsHorizontal from 'vue-material-design-icons/DotsHorizontal.vue';
-import Heart from 'vue-material-design-icons/Heart.vue';
 import ClockTimeThreeOutline from 'vue-material-design-icons/ClockTimeThreeOutline.vue';
-import artist from '../artist.json'
+import Heart from 'vue-material-design-icons/Heart.vue';
 
 import { useSongStore } from '../stores/song'
 import { storeToRefs } from 'pinia';
-const useSong = useSongStore()
-const { isPlaying, currentTrack, currentArtist } = storeToRefs(useSong)
 
-const playFunc = () => {
-    if (currentTrack.value) {
-        useSong.playOrPauseThisSong(currentArtist.value, currentTrack.value)
-        return
-    } 
-    useSong.playFromFirst()
+const useSong = useSongStore()
+const { isPlaying, currentTrack, recentlyPlayed, searchTracks, likedTracks } = storeToRefs(useSong)
+
+onMounted(() => {
+    // Fetch some default music if empty
+    if (searchTracks.value.length === 0) {
+        useSong.fetchTracks('The Weeknd')
+    }
+})
+
+const playTrack = (track) => {
+    useSong.playOrPauseThisSong({ name: track.artistName, artistName: track.artistName, albumCover: track.albumCover }, track)
 }
+
+// Filter liked tracks from searchTracks + recentlyPlayed (since we only store IDs in likedTracks)
+// In a real app, we'd fetch liked tracks by ID. Here we try to find them in memory.
+const myLikedSongs = computed(() => {
+    const allKnownTracks = [...searchTracks.value, ...recentlyPlayed.value]
+    // Deduplicate by ID
+    const uniqueTracks = Array.from(new Map(allKnownTracks.map(item => [item.id, item])).values())
+    return uniqueTracks.filter(t => useSong.isLiked(t.id))
+})
 
 const addToPlaylistModal = ref(null)
 const handleAddToPlaylist = (track) => {
@@ -30,66 +41,68 @@ const handleAddToPlaylist = (track) => {
 
 <template>
     <div class="p-8 overflow-x-hidden">
-        <button
-            type="button"
-            class="text-white text-2xl font-semibold hover:underline cursor-pointer"
-        >
-            {{ artist.artistName }}
-        </button>
+        <h1 class="text-white text-3xl font-bold mb-6">Your Library</h1>
 
-        <div class="py-1.5"></div>
-        <div class="flex items-center w-full relative h-full">
-            <img width="140" :src="artist.albumCover">
-
-            <div class="w-full ml-5">
-
-                <div
-                    style="font-size: 33px;"
-                    class="text-white absolute w-full hover:underline cursor-pointer top-0 font-bosemiboldld"
+        <!-- Recently Played Section -->
+        <div v-if="recentlyPlayed.length > 0" class="mb-10">
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="text-white text-xl font-bold">Recently Played</h2>
+            </div>
+            
+            <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                <div 
+                    v-for="(track, i) in recentlyPlayed.slice(0, 5)" 
+                    :key="track.id"
+                    class="bg-[#181818] p-4 rounded-md hover:bg-[#282828] transition-colors group cursor-pointer"
+                    @click="playTrack(track)"
                 >
-                    {{ artist.name }}
-                </div>
-
-                <div class="text-gray-300 text-[13px] flex">
-                    <div class="flex">Album</div>
-                    <div class="ml-2 flex">
-                        <div class="circle mt-2 mr-2" />
-                        <span class="-ml-0.5">{{ artist.releaseYear }}</span>
+                    <div class="relative mb-4">
+                        <img :src="track.albumCover" class="w-full rounded-md shadow-lg aspect-square object-cover">
+                        <button 
+                            class="absolute bottom-2 right-2 bg-green-500 rounded-full p-3 opacity-0 group-hover:opacity-100 hover:scale-105 transition-all shadow-xl translate-y-2 group-hover:translate-y-0"
+                        >
+                            <Play v-if="!isPlaying || currentTrack?.id !== track.id" fillColor="black" :size="24" />
+                            <Pause v-else fillColor="black" :size="24" />
+                        </button>
                     </div>
-                    <div class="ml-2 flex">
-                        <div class="circle mt-2 mr-2" />
-                        <span class="-ml-0.5">{{ artist.tracks.length }} songs</span>
-                    </div>
-                </div>
-
-                <div class="absolute flex gap-4 items-center justify-start bottom-0 mb-1.5">
-                    <button class="p-1 rounded-full bg-white" @click="playFunc()">
-                        <Play v-if="!isPlaying" fillColor="#181818" :size="25"/>
-                        <Pause v-else fillColor="#181818" :size="25"/>
-                    </button>
-                    <button type="button">
-                        <Heart fillColor="#1BD760" :size="30"/>
-                    </button>
-                    <button type="button">
-                        <DotsHorizontal fillColor="#FFFFFF" :size="25"/>
-                    </button>
+                    <div class="text-white font-bold truncate">{{ track.name }}</div>
+                    <div class="text-gray-400 text-sm truncate">{{ track.artistName }}</div>
                 </div>
             </div>
         </div>
 
-        <div class="mt-6"></div>
-        <div class="flex items-center justify-between px-5 pt-2">
-            <div class="flex items-center justify-between text-gray-400">
-                <div class="mr-7">#</div>
-                <div class="text-sm">Title</div>
+        <!-- Liked Songs Preview -->
+        <div v-if="myLikedSongs.length > 0" class="mb-10">
+            <div class="flex items-center gap-4 mb-4 cursor-pointer hover:underline">
+                <div class="bg-gradient-to-br from-purple-700 to-blue-700 p-2 rounded-sm">
+                    <Heart fillColor="white" :size="24"/>
+                </div>
+                <h2 class="text-white text-xl font-bold">Liked Songs ({{ myLikedSongs.length }})</h2>
             </div>
-            <div><ClockTimeThreeOutline fillColor="#FFFFFF" :size="18"/></div>
         </div>
-        <div class="border-b border-b-[#2A2A2A] mt-2"></div>
-        <div class="mb-4"></div>
-        <ul class="w-full" v-for="track, index in artist.tracks" :key="track">
-            <SongRow :artist="artist" :track="track" :index="++index" @addToPlaylist="handleAddToPlaylist"/>
-        </ul>
+
+        <!-- Discover / Recommended -->
+        <div>
+            <h2 class="text-white text-xl font-bold mb-4">Recommended for you</h2>
+            <div class="flex items-center justify-between px-5 pt-2 text-gray-400 text-sm border-b border-[#2A2A2A] pb-2 mb-4">
+                <div class="flex items-center">
+                    <div class="mr-7">#</div>
+                    <div>Title</div>
+                </div>
+                <div><ClockTimeThreeOutline fillColor="#FFFFFF" :size="18"/></div>
+            </div>
+
+            <ul class="w-full">
+                <SongRow 
+                    v-for="(track, index) in searchTracks" 
+                    :key="track.id" 
+                    :artist="{ name: track.artistName, artistName: track.artistName }" 
+                    :track="track" 
+                    :index="index + 1" 
+                    @addToPlaylist="handleAddToPlaylist"
+                />
+            </ul>
+        </div>
         
         <AddToPlaylistModal ref="addToPlaylistModal" />
     </div>

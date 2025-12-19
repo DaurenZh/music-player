@@ -6,24 +6,20 @@ import Pause from 'vue-material-design-icons/Pause.vue';
 import Heart from 'vue-material-design-icons/Heart.vue';
 import DotsHorizontal from 'vue-material-design-icons/DotsHorizontal.vue';
 import ClockTimeThreeOutline from 'vue-material-design-icons/ClockTimeThreeOutline.vue';
-import artist from '../artist.json'
 
 import { useSongStore } from '../stores/song'
 import { storeToRefs } from 'pinia';
 const useSong = useSongStore()
-const { isPlaying, currentTrack, currentArtist } = storeToRefs(useSong)
-
-const likedTracks = computed(() => {
-    return artist.tracks.filter(track => useSong.isLiked(track.id))
-})
+const { isPlaying, currentTrack, currentArtist, likedTracks } = storeToRefs(useSong)
 
 const playFunc = () => {
-    if (currentTrack.value) {
+    if (currentTrack.value && likedTracks.value.some(t => t.id === currentTrack.value.id)) {
         useSong.playOrPauseThisSong(currentArtist.value, currentTrack.value)
         return
     } 
     if (likedTracks.value.length > 0) {
-        useSong.loadSong(artist, likedTracks.value[0])
+        const track = likedTracks.value[0]
+        useSong.loadSong({ name: track.artistName, artistName: track.artistName, albumCover: track.albumCover }, track)
     }
 }
 </script>
@@ -36,6 +32,7 @@ const playFunc = () => {
             </div>
 
             <div class="w-full ml-5">
+                <div class="text-gray-300 text-[13px] mb-2">Playlist</div>
                 <div
                     style="font-size: 33px;"
                     class="text-white absolute w-full hover:underline cursor-pointer top-0 font-bosemiboldld"
@@ -72,8 +69,15 @@ const playFunc = () => {
         </div>
         <div class="border-b border-b-[#2A2A2A] mt-2"></div>
         <div class="mb-4"></div>
-        <ul class="w-full" v-for="track, index in likedTracks" :key="track">
-            <SongRow :artist="artist" :track="track" :index="++index"/>
+        <ul class="w-full" v-for="(track, index) in likedTracks" :key="track.id">
+            <SongRow 
+                :artist="{ name: track.artistName, artistName: track.artistName }" 
+                :track="track" 
+                :index="index + 1"
+            />
         </ul>
+        <div v-if="likedTracks.length === 0" class="text-gray-400 text-center mt-10">
+            No liked songs yet.
+        </div>
     </div>
 </template>
