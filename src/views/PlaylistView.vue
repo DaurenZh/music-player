@@ -170,9 +170,6 @@ const playTrack = (track) => {
             <Play v-if="!isPlaying" fillColor="#181818" :size="25" />
             <Pause v-else fillColor="#181818" :size="25" />
           </button>
-          <button type="button">
-            <Heart fillColor="#1BD760" :size="30" />
-          </button>
           <div class="relative">
             <button
               type="button"
@@ -251,43 +248,36 @@ const playTrack = (track) => {
                 <Plus fillColor="#1DB954" :size="20" />
               </button>
             </li>
-            <div class="absolute flex gap-4 items-center justify-start bottom-0 mb-1.5">
-                    <button class="p-1 rounded-full bg-white" @click="playFunc()">
-                        <Play v-if="!isPlaying" fillColor="#181818" :size="25"/>
-                        <Pause v-else fillColor="#181818" :size="25"/>
-                    </button>
-                    <button type="button">
-                        <Heart fillColor="#1BD760" :size="30"/>
-                    </button>
-                    <button type="button">
-                        <DotsHorizontal fillColor="#FFFFFF" :size="25"/>
-                    </button>
-                </div>
-            </div>
+          </ul>
         </div>
+      </transition>
+    </div>
 
-        <div class="mt-6"></div>
-        <div class="flex items-center justify-between px-5 pt-2">
-            <div class="flex items-center justify-between text-gray-400">
-                <div class="mr-7">#</div>
-                <div class="text-sm">Title</div>
-            </div>
-            <div><ClockTimeThreeOutline fillColor="#FFFFFF" :size="18"/></div>
-        </div>
-        <div class="border-b border-b-[#2A2A2A] mt-2"></div>
-        <div class="mb-4"></div>
-        <ul class="w-full" v-for="track, index in likedTracks" :key="track">
-            <SongRow :artist="artist" :track="track" :index="++index"/>
-        </ul>
-        </div>
-        <div
-          v-else-if="showSearchResults && searchQuery.trim() && filteredSongs.length === 0"
-          class="absolute top-full mt-2 w-full max-w-md bg-[#282828] rounded-md shadow-2xl z-50 p-4"
-        >
-          <p class="text-gray-400 text-sm">No songs found</p>
-        </div>
+    <div class="flex items-center justify-between px-5 pt-2">
+      <div class="flex items-center justify-between text-gray-400">
+        <div class="mr-7">#</div>
+        <div class="text-sm">Title</div>
+      </div>
+      <div><ClockTimeThreeOutline fillColor="#FFFFFF" :size="18" /></div>
+    </div>
+    <div class="border-b border-b-[#2A2A2A] mt-2"></div>
+    <div class="mb-4"></div>
 
-      <div v-if="playlistTracks.length === 0" class="text-center text-gray-400 mt-8">
+    <ul class="w-full" v-for="(track, index) in playlistTracks" :key="track.id">
+      <SongRow 
+        :artist="artist" 
+        :track="track" 
+        :index="index + 1"
+        :showMenuButton="true"
+        :showMenu="activeTrackMenu === track.id"
+        @showMenu="toggleTrackMenu(track.id)"
+        @removeFromPlaylist="removeFromPlaylist(track.id)"
+        @addToPlaylist="addToAnotherPlaylist(track)"
+        @toggleLike="toggleLikeTrack(track.id)"
+      />
+    </ul>
+
+    <div v-if="playlistTracks.length === 0" class="text-center text-gray-400 mt-8">
       <p class="text-lg mb-4">This playlist is empty</p>
       <p class="text-sm">Use the search bar above to add songs</p>
     </div>
@@ -295,10 +285,11 @@ const playTrack = (track) => {
     <AddToPlaylistModal ref="addToPlaylistModal" />
     <SelectSongsModal ref="selectSongsModal" />
     <EditPlaylistModal ref="editPlaylistModal" />
-<!-- 
-     <div v-else class="p-8 text-center text-gray-400">
-         <p>Playlist not found</p>
-     </div> -->
+  </div>
+
+  <div v-else class="p-8 text-center text-gray-400">
+    <p>Playlist not found</p>
+  </div>
 </template>
 
 <style scoped>
