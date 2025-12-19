@@ -13,6 +13,12 @@ import { storeToRefs } from 'pinia';
 const useSong = useSongStore()
 const { isPlaying, currentTrack, recentlyPlayed, searchTracks, likedTracks } = storeToRefs(useSong)
 
+const clearHistory = () => {
+    if (confirm('Clear recently played history?')) {
+        useSong.clearRecentlyPlayed()
+    }
+}
+
 onMounted(() => {
     // Fetch some default music if empty
     if (searchTracks.value.length === 0) {
@@ -47,6 +53,12 @@ const handleAddToPlaylist = (track) => {
         <div v-if="recentlyPlayed.length > 0" class="mb-10">
             <div class="flex items-center justify-between mb-4">
                 <h2 class="text-white text-xl font-bold">Recently Played</h2>
+                <button 
+                    @click="clearHistory"
+                    class="text-gray-400 hover:text-white text-sm font-semibold hover:underline"
+                >
+                    Clear All
+                </button>
             </div>
             
             <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">

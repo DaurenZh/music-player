@@ -1,5 +1,6 @@
 <script setup>
 import { ref, watch, onMounted } from 'vue'
+import { RouterLink } from 'vue-router'
 import MusicPlayerVolume from '../components/MusicPlayerVolume.vue'
 import Heart from 'vue-material-design-icons/Heart.vue';
 import PictureInPictureBottomRight from 'vue-material-design-icons/PictureInPictureBottomRight.vue';
@@ -7,11 +8,14 @@ import Play from 'vue-material-design-icons/Play.vue';
 import Pause from 'vue-material-design-icons/Pause.vue';
 import SkipBackward from 'vue-material-design-icons/SkipBackward.vue';
 import SkipForward from 'vue-material-design-icons/SkipForward.vue';
+import ShuffleVariant from 'vue-material-design-icons/ShuffleVariant.vue';
+import Repeat from 'vue-material-design-icons/Repeat.vue';
+import RepeatOnce from 'vue-material-design-icons/RepeatOnce.vue';
 
 import { useSongStore } from '../stores/song'
 import { storeToRefs } from 'pinia';
 const useSong = useSongStore()
-const { isPlaying, audio, currentTrack, currentArtist } = storeToRefs(useSong)
+const { isPlaying, audio, currentTrack, currentArtist, isShuffle, repeatMode } = storeToRefs(useSong)
 
 let isHover = ref(false)
 let isTrackTimeCurrent = ref(null)
@@ -85,6 +89,18 @@ watch(() => isTrackTimeCurrent.value, (time) => {
     }
 })
 
+const toggleShuffle = () => {
+    isShuffle.value = !isShuffle.value
+}
+
+const toggleRepeat = () => {
+    if (repeatMode.value === 2) {
+        repeatMode.value = 0
+    } else {
+        repeatMode.value++
+    }
+}
+
 </script>
 
 <template>
@@ -109,12 +125,15 @@ watch(() => isTrackTimeCurrent.value, (time) => {
             <div class="flex items-center ml-4">
                 <img class="rounded-sm shadow-2xl" width="55" :src="currentArtist.albumCover">
                 <div class="ml-4">
-                    <div class="text-[14px] text-white hover:underline cursor-pointer">
+                    <div class="text-[14px] text-white hover:underline cursor-pointer truncate max-w-[150px]">
                         {{ currentTrack.name }}
                     </div>
-                    <div class="text-[11px] text-gray-500 hover:underline hover:text-white cursor-pointer">
+                    <RouterLink 
+                        :to="{ path: '/search', query: { q: currentArtist.name } }"
+                        class="text-[11px] text-gray-500 hover:underline hover:text-white cursor-pointer block truncate max-w-[150px]"
+                    >
                         {{ currentArtist.name }}
-                    </div>
+                    </RouterLink>
                 </div>
             </div>
             <div class="flex items-center ml-8">
@@ -126,6 +145,9 @@ watch(() => isTrackTimeCurrent.value, (time) => {
         <div class="max-w-[35%] mx-auto w-2/4 mb-3">
             <div class="flex-col items-center justify-center">
                 <div class="buttons flex items-center justify-center h-[30px]">
+                    <button class="mx-2" @click="toggleShuffle">
+                        <ShuffleVariant :fillColor="isShuffle ? '#1BD760' : '#FFFFFF'" :size="20" />
+                    </button>
                     <button class="mx-2">
                         <SkipBackward fillColor="#FFFFFF" :size="25" @click="useSong.prevSong(currentTrack)"/>
                     </button>
@@ -135,6 +157,10 @@ watch(() => isTrackTimeCurrent.value, (time) => {
                     </button>
                     <button class="mx-2">
                         <SkipForward fillColor="#FFFFFF" :size="25" @click="useSong.nextSong(currentTrack)"/>
+                    </button>
+                    <button class="mx-2" @click="toggleRepeat">
+                        <Repeat v-if="repeatMode !== 2" :fillColor="repeatMode === 1 ? '#1BD760' : '#FFFFFF'" :size="20" />
+                        <RepeatOnce v-else fillColor="#1BD760" :size="20" />
                     </button>
                 </div>
 

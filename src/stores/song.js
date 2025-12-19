@@ -7,10 +7,16 @@ export const useSongStore = defineStore('song', {
     audio: null,
     currentArtist: null,
     currentTrack: null,
-    likedTracks: [], // Stores full track objects
-    playlists: [], // Stores playlists with full track objects
+    likedTracks: [],
+    playlists: [],
     searchTracks: [],
-    recentlyPlayed: []
+    recentlyPlayed: [],
+    
+    // New State
+    homeSections: [],
+    topArtists: [], // Artists for Search view
+    isShuffle: false,
+    repeatMode: 0, // 0: Off, 1: Repeat All, 2: Repeat One
   }),
   actions: {
     async fetchTracks(term) {
@@ -24,13 +30,91 @@ export const useSongStore = defineStore('song', {
                 name: item.trackName,
                 artistName: item.artistName,
                 albumName: item.collectionName,
-                albumCover: item.artworkUrl100.replace('100x100', '300x300'),
+                // Get higher res (600x600) for "original" look
+                albumCover: item.artworkUrl100 ? item.artworkUrl100.replace('100x100', '600x600') : '',
                 song: item.previewUrl,
                 releaseYear: new Date(item.releaseDate).getFullYear(),
                 duration: item.trackTimeMillis
             }))
         } catch (error) {
             console.error("Failed to fetch tracks:", error)
+        }
+    },
+
+    async fetchHomeSections() {
+        // Updated categories to include Audiobooks (new API feature)
+        const categories = [
+            { title: 'Trending Now', term: 'top hits 2024', media: 'music', entity: 'song' },
+            { title: 'Pop Essentials', term: 'pop hits', media: 'music', entity: 'song' },
+            { title: 'Rock Classics', term: 'rock legends', media: 'music', entity: 'song' },
+            { title: 'Hip-Hop Culture', term: 'rap hits', media: 'music', entity: 'song' },
+            { title: 'Best Selling Audiobooks', term: 'biography', media: 'audiobook', entity: 'audiobook' }
+        ]
+
+        try {
+            const promises = categories.map(async (cat) => {
+                const res = await fetch(`https://itunes.apple.com/search?term=${encodeURIComponent(cat.term)}&media=${cat.media}&entity=${cat.entity}&limit=5`)
+                const data = await res.json()
+                return {
+                    title: cat.title,
+                    items: data.results.map(item => ({
+                        id: item.trackId || item.collectionId,
+                        title: item.trackName || item.collectionName,
+                        subTitle: item.artistName,
+                        // Specific search query: Artist + Track Name
+                        searchQuery: `${item.artistName} ${item.trackName || item.collectionName}`,
+                        // High res images
+                        image: item.artworkUrl100 ? item.artworkUrl100.replace('100x100', '600x600') : '',
+                        trackData: {
+                            id: item.trackId || item.collectionId,
+                            name: item.trackName || item.collectionName,
+                            artistName: item.artistName,
+                            albumCover: item.artworkUrl100 ? item.artworkUrl100.replace('100x100', '600x600') : '',
+                            song: item.previewUrl, // Audiobooks might not have previewUrl in the same way, but music does
+                            duration: item.trackTimeMillis
+                        }
+                    }))
+                }
+            })
+            this.homeSections = await Promise.all(promises)
+        } catch (e) {
+            console.error("Failed to fetch home sections", e)
+        }
+    },
+
+    async fetchTopArtists() {
+        // List of artists including Asxa Prince as requested
+        const artistNames = [
+            'V $ X V PRiNCE', // Moved to first position
+            'The Weeknd', 
+            'Taylor Swift', 
+            'Drake', 
+            'BTS', 
+            'Ariana Grande', 
+            'Eminem', 
+            'Bad Bunny', 
+            'Justin Bieber', 
+            'Kanye West'
+        ]
+        
+        try {
+            const promises = artistNames.map(async (name) => {
+                // Fetch 1 track to get artist details/image
+                const res = await fetch(`https://itunes.apple.com/search?term=${encodeURIComponent(name)}&media=music&entity=song&limit=1`)
+                const data = await res.json()
+                const item = data.results[0]
+                return item ? {
+                    id: item.artistId,
+                    title: item.artistName,
+                    subTitle: 'Artist',
+                    searchQuery: item.artistName, // Search for the artist name
+                    image: item.artworkUrl100 ? item.artworkUrl100.replace('100x100', '600x600') : ''
+                } : null
+            })
+            const results = await Promise.all(promises)
+            this.topArtists = results.filter(Boolean)
+        } catch (e) {
+            console.error("Failed to fetch top artists", e)
         }
     },
 
@@ -66,7 +150,12 @@ export const useSongStore = defineStore('song', {
         }
     },
 
+    clearRecentlyPlayed() {
+        this.recentlyPlayed = []
+    },
+
     playOrPauseSong() {
+      if (!this.audio) return
       if (this.audio.paused) {
         this.isPlaying = true
         this.audio.play()
@@ -86,26 +175,56 @@ export const useSongStore = defineStore('song', {
 
     prevSong(currentTrack) {
         let list = this.searchTracks.length > 0 ? this.searchTracks : this.recentlyPlayed
-        if (list.length === 0) list = artist.tracks // Fallback
+        if (list.length === 0) list = artist.tracks
         
+        if (this.isShuffle) {
+             let randomIndex = Math.floor(Math.random() * list.length)
+             const track = list[randomIndex]
+             this.loadSong(track.artistName ? { ...track, name: track.artistName } : artist, track)
+             return
+        }
+
         let index = list.findIndex(t => t.id === currentTrack.id)
         if (index > 0) {
             const track = list[index - 1]
             this.loadSong(track.artistName ? { ...track, name: track.artistName } : artist, track)
+        } else {
+             const track = list[list.length - 1]
+             this.loadSong(track.artistName ? { ...track, name: track.artistName } : artist, track)
         }
     },
 
     nextSong(currentTrack) {
+        if (this.repeatMode === 2) { // Repeat One
+            this.loadSong(this.currentArtist, currentTrack)
+            return
+        }
+
         let list = this.searchTracks.length > 0 ? this.searchTracks : this.recentlyPlayed
-        if (list.length === 0) list = artist.tracks // Fallback
+        if (list.length === 0) list = artist.tracks
+
+        if (this.isShuffle) {
+            let randomIndex = Math.floor(Math.random() * list.length)
+            if (list.length > 1 && list[randomIndex].id === currentTrack.id) {
+                randomIndex = (randomIndex + 1) % list.length
+            }
+            const track = list[randomIndex]
+            this.loadSong(track.artistName ? { ...track, name: track.artistName } : artist, track)
+            return
+        }
 
         let index = list.findIndex(t => t.id === currentTrack.id)
         if (index < list.length - 1) {
             const track = list[index + 1]
             this.loadSong(track.artistName ? { ...track, name: track.artistName } : artist, track)
         } else {
-            const track = list[0]
-            this.loadSong(track.artistName ? { ...track, name: track.artistName } : artist, track)
+            if (this.repeatMode === 1) { // Repeat All
+                const track = list[0]
+                this.loadSong(track.artistName ? { ...track, name: track.artistName } : artist, track)
+            } else {
+                const track = list[0]
+                this.loadSong(track.artistName ? { ...track, name: track.artistName } : artist, track)
+            }
         }
     },
 

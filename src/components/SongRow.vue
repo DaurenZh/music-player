@@ -1,5 +1,6 @@
 <script setup>
 import { ref, toRefs, onMounted } from 'vue'
+import { RouterLink } from 'vue-router'
 import Heart from 'vue-material-design-icons/Heart.vue'
 import HeartOutline from 'vue-material-design-icons/HeartOutline.vue'
 import Play from 'vue-material-design-icons/Play.vue'
@@ -104,7 +105,14 @@ const playThis = () => {
         >
           {{ track.name }}
         </div>
-        <div class="text-sm font-semibold text-gray-400 truncate">{{ artist.artistName || track.artistName }}</div>
+        <!-- Artist Name Link -->
+        <RouterLink 
+            :to="{ path: '/search', query: { q: artist.artistName || track.artistName } }"
+            class="text-sm font-semibold text-gray-400 truncate hover:underline hover:text-white"
+            @click.stop
+        >
+            {{ artist.artistName || track.artistName }}
+        </RouterLink>
       </div>
     </div>
 
@@ -117,10 +125,6 @@ const playThis = () => {
         <HeartOutline v-else fillColor="#FFFFFF" :size="22" />
       </button>
 
-      <div class="text-gray-400 text-xs mx-5 w-[40px] text-center">
-        {{ isTrackTime }}
-      </div>
-
       <div class="relative">
         <button
           @click.stop="showAddToPlaylist"
@@ -128,6 +132,10 @@ const playThis = () => {
         >
           <DotsHorizontal fillColor="#b3b3b3" :size="20" />
         </button>
+      </div>
+
+      <div class="text-gray-400 text-xs mx-5 w-[40px] text-center">
+        {{ isTrackTime }}
       </div>
     </div>
   </li>

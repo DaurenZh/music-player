@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
 import { RouterLink, RouterView, useRouter } from 'vue-router'
 import MenuItem from './components/MenuItem.vue'
 import MusicPlayer from './components/MusicPlayer.vue'
@@ -16,8 +16,20 @@ import { storeToRefs } from 'pinia'
 const useSong = useSongStore()
 const { isPlaying, currentTrack, playlists } = storeToRefs(useSong)
 
+const handleKeydown = (e) => {
+  if (e.code === 'Space' && e.target.tagName !== 'INPUT') {
+    e.preventDefault() // Prevent scrolling
+    useSong.playOrPauseSong()
+  }
+}
+
 onMounted(() => {
   isPlaying.value = false
+  window.addEventListener('keydown', handleKeydown)
+})
+
+onUnmounted(() => {
+  window.removeEventListener('keydown', handleKeydown)
 })
 
 let openMenu = ref(false)
