@@ -12,17 +12,25 @@ export const useSongStore = defineStore('song', {
     searchTracks: [],
     recentlyPlayed: [],
     
-    // New State
+
     homeSections: [],
-    topArtists: [], // Artists for Search view
+    topArtists: [], 
     isShuffle: false,
-    repeatMode: 0, // 0: Off, 1: Repeat All, 2: Repeat One
+    repeatMode: 0, 
+    error: null, 
   }),
+  getters: {
+
+    playlistCount: (state) => state.playlists.length,
+    hasError: (state) => !!state.error
+  },
   actions: {
     async fetchTracks(term) {
+        this.error = null
         if (!term) return
         try {
             const response = await fetch(`https://itunes.apple.com/search?term=${encodeURIComponent(term)}&media=music&entity=song&limit=50`)
+            if (!response.ok) throw new Error('Network response was not ok')
             const data = await response.json()
             
             this.searchTracks = data.results.map(item => ({
@@ -37,14 +45,15 @@ export const useSongStore = defineStore('song', {
                 duration: item.trackTimeMillis
             }))
         } catch (error) {
+            this.error = error.message
             console.error("Failed to fetch tracks:", error)
         }
     },
 
     async fetchHomeSections() {
-        // Updated categories to include Audiobooks (new API feature)
+       
         const categories = [
-            { title: 'Trending Now', term: 'top hits 2024', media: 'music', entity: 'song' },
+            
             { title: 'Pop Essentials', term: 'pop hits', media: 'music', entity: 'song' },
             { title: 'Rock Classics', term: 'rock legends', media: 'music', entity: 'song' },
             { title: 'Hip-Hop Culture', term: 'rap hits', media: 'music', entity: 'song' },
@@ -61,16 +70,16 @@ export const useSongStore = defineStore('song', {
                         id: item.trackId || item.collectionId,
                         title: item.trackName || item.collectionName,
                         subTitle: item.artistName,
-                        // Specific search query: Artist + Track Name
+                       
                         searchQuery: `${item.artistName} ${item.trackName || item.collectionName}`,
-                        // High res images
+
                         image: item.artworkUrl100 ? item.artworkUrl100.replace('100x100', '600x600') : '',
                         trackData: {
                             id: item.trackId || item.collectionId,
                             name: item.trackName || item.collectionName,
                             artistName: item.artistName,
                             albumCover: item.artworkUrl100 ? item.artworkUrl100.replace('100x100', '600x600') : '',
-                            song: item.previewUrl, // Audiobooks might not have previewUrl in the same way, but music does
+                            song: item.previewUrl, 
                             duration: item.trackTimeMillis
                         }
                     }))

@@ -103,17 +103,17 @@ const goForward = () => {
           />
           <div class="text-white text-[14px] ml-1.5 font-semibold">{{ activeAccount().name }}</div>
           <ChevronDown
-            v-if="!openMenu"
+            v-show="!openMenu"
             @click.stop="openMenu = true"
             fillColor="#FFFFFF"
             :size="25"
           />
-          <ChevronUp v-else @click.stop="openMenu = false" fillColor="#FFFFFF" :size="25" />
+          <ChevronUp v-show="openMenu" @click.stop="openMenu = false" fillColor="#FFFFFF" :size="25" />
         </div>
       </button>
 
       <span
-        v-if="openMenu"
+        v-show="openMenu"
         class="fixed w-[240px] bg-[#282828] shadow-2xl z-50 rounded-sm top-[52px] right-[35px] p-1 cursor-pointer"
       >
         <ul class="text-gray-200 font-semibold text-[14px]">
@@ -138,7 +138,9 @@ const goForward = () => {
             </div>
             <span v-if="idx === activeAccountIndex" class="text-green-500 text-xs">Current</span>
           </li>
-          <li class="px-3 py-2.5 hover:bg-[#3E3D3D] border-t border-t-gray-600">Profile</li>
+          <li class="px-3 py-2.5 hover:bg-[#3E3D3D] border-t border-t-gray-600">
+            <RouterLink to="/profile" @click="openMenu = false">Profile</RouterLink>
+          </li>
           <li class="px-3 py-2.5 hover:bg-[#3E3D3D]">Log out</li>
         </ul>
       </span>
@@ -215,10 +217,26 @@ const goForward = () => {
     class="fixed right-0 top-0 w-[calc(100%-240px)] overflow-auto h-full bg-gradient-to-b from-[#1C1C1C] to-black"
   >
     <div class="mt-[70px]"></div>
-    <RouterView />
+    <RouterView v-slot="{ Component }">
+      <Transition name="fade" mode="out-in">
+        <component :is="Component" />
+      </Transition>
+    </RouterView>
     <div class="mb-[100px]"></div>
   </div>
 
   <MusicPlayer v-if="currentTrack" />
   <CreatePlaylistModal ref="createPlaylistModal" />
 </template>
+
+<style>
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.2s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+</style>

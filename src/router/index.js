@@ -1,34 +1,54 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import HomeView from '../views/HomeView.vue'
-import SearchView from '../views/SearchView.vue'
-import LibraryView from '../views/LibraryView.vue'
-import LikedSongsView from '../views/LikedSongsView.vue'
-import PlaylistView from '../views/PlaylistView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
     {
       path: '/',
+      name: 'home',
       component: HomeView
     },
     {
       path: '/search',
-      component: SearchView
+      name: 'search',
+      // Lazy loading
+      component: () => import('../views/SearchView.vue')
     },
     {
       path: '/library',
-      component: LibraryView
+      name: 'library',
+      component: () => import('../views/LibraryView.vue')
     },
     {
       path: '/liked',
-      component: LikedSongsView
+      name: 'liked',
+      component: () => import('../views/LikedSongsView.vue')
     },
     {
       path: '/playlist/:id',
-      component: PlaylistView
+      name: 'playlist',
+      component: () => import('../views/PlaylistView.vue')
+    },
+    {
+      path: '/profile',
+      name: 'profile',
+      component: () => import('../views/ProfileView.vue')
+    },
+    // 404 Route
+    {
+      path: '/:pathMatch(.*)*',
+      name: 'not-found',
+      component: () => import('../views/NotFoundView.vue')
     }
   ]
+})
+
+// Navigation Guard
+router.beforeEach((to, from, next) => {
+  // Example: Log navigation or check auth
+  console.log(`Navigating to: ${to.name}`)
+  next()
 })
 
 export default router

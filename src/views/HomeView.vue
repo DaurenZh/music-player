@@ -5,7 +5,7 @@
     import { storeToRefs } from 'pinia';
 
     const useSong = useSongStore()
-    const { homeSections } = storeToRefs(useSong)
+    const { homeSections, recentlyPlayed } = storeToRefs(useSong)
 
     onMounted(() => {
         if (homeSections.value.length === 0) {
@@ -16,6 +16,23 @@
 
 <template>
     <div class="p-8 overflow-x-hidden">
+        <!-- Recently Played Section -->
+        <div v-if="recentlyPlayed.length > 0" class="mb-8">
+            <h2 class="text-white text-2xl font-bold mb-4 cursor-pointer">
+                Recently Played
+            </h2>
+            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+                <HomeCard 
+                    v-for="track in recentlyPlayed.slice(0, 5)" 
+                    :key="track.id"
+                    :image="track.albumCover" 
+                    :title="track.name" 
+                    :subTitle="track.artistName"
+                    :searchQuery="track.artistName + ' ' + track.name" 
+                />
+            </div>
+        </div>
+
         <div v-if="homeSections.length === 0" class="text-white text-center mt-10">
             Loading recommendations...
         </div>
